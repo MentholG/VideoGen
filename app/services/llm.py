@@ -1,11 +1,13 @@
 import logging
 import re
 import json
+import boto3
 from typing import List
 from loguru import logger
 from openai import OpenAI
 from openai import AzureOpenAI
 from app.config import config
+
 
 
 def _generate_response(prompt: str) -> str:
@@ -66,6 +68,31 @@ def _generate_response(prompt: str) -> str:
             content = response["output"]["text"]
             return content.replace("\n", "")
 
+        if llm_provider == "bedrock":
+            model_id = 'mistral.mistral-7b-instruct-v0:2'
+            # prompt = """<s>[INST] In Bash, how do I list all text files in the current directory
+            # (excluding subdirectories) that have been modified in the last month? [/INST]"""
+            body = json.dumps({
+                "prompt": prompt,
+                "max_tokens": 400,
+                "temperature": 0.7,
+                "top_p": 0.7,
+                "top_k": 50
+            })
+            bedrock = boto3.client(service_name='bedrock-runtime')
+            response = bedrock.invoke_model(
+                body=body,
+                modelId=model_id
+            )
+            response_body = json.loads(response.get('body').read())
+            outputs = response_body.get('outputs')
+            for index, output in enumerate(outputs):
+                print(f"Output {index + 1}\n----------")
+                print(f"Text:\n{output['text']}\n")
+                print(f"Stop reason: {output['stop_reason']}\n")
+
+            return ""
+
         if llm_provider == "azure":
             client = AzureOpenAI(
                 api_key=api_key,
@@ -77,6 +104,7 @@ def _generate_response(prompt: str) -> str:
                 api_key=api_key,
                 base_url=base_url,
             )
+        
 
         print("_generate_response prompt:",prompt)
         response = client.chat.completions.create(
