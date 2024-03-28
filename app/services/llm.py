@@ -2,11 +2,15 @@ import logging
 import re
 import json
 import boto3
+import os
+
 from typing import List
 from loguru import logger
 from openai import OpenAI
 from openai import AzureOpenAI
 from app.config import config
+
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 
 
@@ -49,7 +53,10 @@ def _generate_response(prompt: str) -> str:
             model_name = config.app.get("qwen_model_name")
             base_url = "***"
         elif llm_provider == "bedrock":
-            print("use")
+            api_key = "xxx"
+            model_name = "xxx"
+            base_url = "xxx"
+            print("[_generate_response] use bedrock")
         else:
             raise ValueError("llm_provider is not set, please set it in the config.toml file.")
 
@@ -81,7 +88,7 @@ def _generate_response(prompt: str) -> str:
                 "top_p": 0.7,
                 "top_k": 50
             })
-            bedrock = boto3.client(service_name='bedrock-runtime')
+            bedrock = boto3.client(service_name='bedrock-runtime', region_name="us-east-1")
             response = bedrock.invoke_model(
                 body=body,
                 modelId=model_id
