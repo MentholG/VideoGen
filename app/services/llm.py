@@ -78,6 +78,7 @@ def _generate_response(prompt: str) -> str:
                 base_url=base_url,
             )
 
+        print("_generate_response prompt:",prompt)
         response = client.chat.completions.create(
             model=model_name,
             messages=[{"role": "user", "content": prompt}]
