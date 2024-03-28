@@ -100,7 +100,7 @@ def _generate_response(prompt: str) -> str:
                 print(f"Text:\n{output['text']}\n")
                 print(f"Stop reason: {output['stop_reason']}\n")
 
-            return ""
+            return output['text'].replace("\n", "")
 
         if llm_provider == "azure":
             client = AzureOpenAI(
