@@ -48,6 +48,8 @@ def _generate_response(prompt: str) -> str:
             api_key = config.app.get("qwen_api_key")
             model_name = config.app.get("qwen_model_name")
             base_url = "***"
+        elif llm_provider == "bedrock":
+            print("use")
         else:
             raise ValueError("llm_provider is not set, please set it in the config.toml file.")
 
