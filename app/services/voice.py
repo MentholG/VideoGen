@@ -37,7 +37,7 @@ def create_subtitle(sub_maker: submaker.SubMaker, text: str, subtitle_file: str)
     2. 逐行匹配字幕文件中的文本
     3. 生成新的字幕文件
     """
-
+    print("[create_subtitle] ", sub_maker, text, subtitle_file)
     def formatter(idx: int, start_time: float, end_time: float, sub_text: str) -> str:
         """
         1
@@ -70,6 +70,9 @@ def create_subtitle(sub_maker: submaker.SubMaker, text: str, subtitle_file: str)
 
             sub = unescape(sub)
             sub_line += sub
+            if sub_index >= len(script_lines):
+                print("[create_subtitle] ", sub_index, script_lines, sub_line)
+                continue
             if sub_line == script_lines[sub_index] or sub_line == script_lines_without_space[sub_index]:
                 sub_text = script_lines[sub_index]
                 sub_index += 1
