@@ -46,9 +46,9 @@
     qwen_model_name = "qwen-max" 
 
 
-    # Subtitle Provider, "edge" or "whisper"
+    # Subtitle Provider, "edge" or "whisper" or "polly"
     # If empty, the subtitle will not be generated
-    subtitle_provider = "edge"
+    subtitle_provider = "polly"
 
     #
     # ImageMagick

@@ -32,7 +32,7 @@ def create(audio_file, subtitle_file: str = ""):
         vad_parameters=dict(min_silence_duration_ms=500),
     )
 
-    logger.info(f"detected language: '{info.language}', probability: {info.language_probability:.2f}")
+    logger.info(f"[subtitle.create] detected language: '{info.language}', probability: {info.language_probability:.2f}")
 
     start = timer()
     subtitles = []
@@ -43,7 +43,7 @@ def create(audio_file, subtitle_file: str = ""):
             return
 
         msg = "[%.2fs -> %.2fs] %s" % (seg_start, seg_end, seg_text)
-        logger.debug(msg)
+        logger.info(msg)
 
         subtitles.append({
             "msg": seg_text,
@@ -52,6 +52,7 @@ def create(audio_file, subtitle_file: str = ""):
         })
 
     for segment in segments:
+        logger.info(f"[subtitle.create] segment: '{(segment.start, segment.end, segment.text)}' ")
         words_idx = 0
         words_len = len(segment.words)
 
