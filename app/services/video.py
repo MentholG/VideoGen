@@ -6,10 +6,12 @@ from loguru import logger
 from moviepy.editor import *
 from moviepy.video.fx.crop import crop
 from moviepy.video.tools.subtitles import SubtitlesClip
+from moviepy.config import change_settings
 
 from app.models.schema import VideoAspect, VideoParams, VideoConcatMode
 from app.utils import utils
 
+change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
 
 def get_bgm_file(bgm_type: str = "random", bgm_file: str = ""):
     if not bgm_type:
