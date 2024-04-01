@@ -78,7 +78,8 @@ def _generate_response(prompt: str) -> str:
             return content.replace("\n", "")
 
         if llm_provider == "bedrock":
-            model_id = 'mistral.mistral-7b-instruct-v0:2'
+            # model_id = 'mistral.mistral-7b-instruct-v0:2'
+            model_id = 'mistral.mixtral-8x7b-instruct-v0:1'
             # prompt = """<s>[INST] In Bash, how do I list all text files in the current directory
             # (excluding subdirectories) that have been modified in the last month? [/INST]"""
             body = json.dumps({

@@ -104,10 +104,16 @@ def start(task_id, params: VideoParams):
                     logger.warning(f"subtitle file is invalid, fallback to whisper : {subtitle_path}")
                     subtitle_fallback = True
 
+        # if subtitle_profiler == "polly"  or subtitle_fallback:
+        #     subtitle.create(audio_file=audio_file, subtitle_file=subtitle_path)
+        #     logger.info("\n\n## correcting subtitle")
+        #     subtitle.correct(subtitle_file=subtitle_path, video_script=video_script)
+        
         if subtitle_provider == "whisper" or subtitle_fallback:
             subtitle.create(audio_file=audio_file, subtitle_file=subtitle_path)
             logger.info("\n\n## correcting subtitle")
             subtitle.correct(subtitle_file=subtitle_path, video_script=video_script)
+
 
         subtitle_lines = subtitle.file_to_subtitles(subtitle_path)
         if not subtitle_lines:
