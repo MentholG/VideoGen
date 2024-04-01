@@ -193,7 +193,7 @@ def upload_files_to_s3(file_names, bucket, region, object_names=None):
         # Use the file name as the object name if not specified
         # dir_name, file_name = os.path.split(file_name)
         object_name = object_names[i] if object_names is not None else file_name
-        os.path.join('videos', object_name+".mp4")
+        object_name = os.path.join('videos', object_name+".mp4")
         
         try:
             s3_client.upload_file(file_name, bucket, object_name)
