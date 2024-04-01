@@ -9,6 +9,8 @@ from app.config import config
 from app.models.schema import VideoParams, VoiceNames, VideoConcatMode
 from app.services import llm, material, voice, video, subtitle
 from app.utils import utils
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 
 def _parse_voice(name: str):
@@ -163,7 +165,36 @@ def start(task_id, params: VideoParams):
         final_video_paths.append(final_video_path)
 
     logger.success(f"task {task_id} finished, generated {len(final_video_paths)} videos.")
+    upload_files_to_s3(final_video_paths, 'laoguis3-us-east-1', 'us-east-1')
 
     return {
         "videos": final_video_paths,
     }
+
+
+def upload_files_to_s3(file_names, bucket, region, object_names=None):
+    """
+    Upload multiple files to an S3 bucket in a specified region
+
+    :param file_names: List of files to upload
+    :param bucket: Bucket to upload to
+    :param region: AWS region where the bucket is located
+    :param object_names: List of S3 object names. If not specified, file_names are used
+    :return: None
+    """
+    
+    # Initialize the S3 client
+    s3_client = boto3.client('s3', region_name=region)
+    
+    # Iterate over the list of file names
+    for i, file_name in enumerate(file_names):
+        # Use the file name as the object name if not specified
+        object_name = object_names[i] if object_names is not None else file_name
+        
+        try:
+            s3_client.upload_file(file_name, bucket, object_name)
+            print(f"[upload_files_to_s3] {file_name} uploaded successfully to {bucket}/{object_name}")
+        except NoCredentialsError:
+            print("[upload_files_to_s3] Credentials not available for", file_name)
+        except Exception as e:
+            print(f"[upload_files_to_s3] Failed to upload {file_name}: {e}")
