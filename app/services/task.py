@@ -136,6 +136,7 @@ def start(task_id, params: VideoParams):
         return
 
     final_video_paths = []
+    object_names = []
     video_concat_mode = params.video_concat_mode
     if params.video_count > 1:
         video_concat_mode = VideoConcatMode.random
