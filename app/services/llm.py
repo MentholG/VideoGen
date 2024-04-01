@@ -56,7 +56,7 @@ def _generate_response(prompt: str) -> str:
             api_key = "xxx"
             model_name = "xxx"
             base_url = "xxx"
-            print("[_generate_response] use bedrock")
+            print("use bedrock")
         else:
             raise ValueError("llm_provider is not set, please set it in the config.toml file.")
 
@@ -82,6 +82,7 @@ def _generate_response(prompt: str) -> str:
             model_id = 'mistral.mixtral-8x7b-instruct-v0:1'
             # prompt = """<s>[INST] In Bash, how do I list all text files in the current directory
             # (excluding subdirectories) that have been modified in the last month? [/INST]"""
+            prompt = "<s>[INST]" + prompt + "</s>[/INST]"
             body = json.dumps({
                 "prompt": prompt,
                 "max_tokens": 400,

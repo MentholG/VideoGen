@@ -97,11 +97,11 @@ def download_videos(task_id: str,
     valid_video_urls = []
     found_duration = 0.0
     for search_term in search_terms:
-        # logger.info(f"searching videos for '{search_term}'")
+        logger.info(f" searching videos for '{search_term}'")
         video_items = search_videos(search_term=search_term,
                                     minimum_duration=max_clip_duration,
                                     video_aspect=video_aspect)
-        logger.info(f"found {len(video_items)} videos for '{search_term}'")
+        logger.info(f" found {len(video_items)} videos for '{search_term}'")
 
         for item in video_items:
             if item.url not in valid_video_urls:
