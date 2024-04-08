@@ -1,5 +1,5 @@
 conda activate MoneyPrinterTurbo
 nohup python main.py &
 nohup sh webui.sh &
-cd ./twitter-cut/
+cd ./twitter-cut/src
 nohup npm start &
