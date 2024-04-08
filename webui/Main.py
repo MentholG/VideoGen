@@ -1,4 +1,5 @@
 import streamlit as st
+import asyncio
 
 st.set_page_config(page_title="MoneyPrinterTurbo", page_icon="🤖", layout="wide",
                    initial_sidebar_state="auto")
@@ -261,4 +262,4 @@ if start_button:
 
     logger.info("开始生成视频")
 
-    tm.start(task_id=task_id, params=cfg)
+    asyncio.run(tm.start(task_id=task_id, params=cfg))

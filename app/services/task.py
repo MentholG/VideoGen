@@ -8,10 +8,32 @@ from loguru import logger
 from app.config import config
 from app.models.schema import VideoParams, VoiceNames, VideoConcatMode
 from app.services import llm, material, voice, video, subtitle
+from app.models.exception import HttpException
 from app.utils import utils
 import boto3
 from botocore.exceptions import NoCredentialsError
 
+
+def update_task_state(table, task_id, new_state):
+    parts = task_id.split('_')
+    if len(parts) != 2:
+        raise HttpException(status_code=404, message=f"Task id is wrong format {task_id}")
+    internal_task_id = parts[0]
+    create_time = int(parts[1])
+    response = table.update_item(
+        Key={
+            'task_id': internal_task_id,  # Assuming 'TaskID' is the primary key
+            'create_time': create_time
+        },
+        UpdateExpression='SET #state = :val',  # Update the 'state' attribute
+        ExpressionAttributeValues={
+            ':val': new_state
+        },
+        ExpressionAttributeNames={
+            '#state': 'state'  # Use if 'state' is a reserved word or for safer attribute naming
+        },
+        ReturnValues="UPDATED_NEW"
+    )
 
 def _parse_voice(name: str):
     # "female-zh-CN-XiaoxiaoNeural",
@@ -26,7 +48,7 @@ def _parse_voice(name: str):
     return _voice, _lang
 
 
-def start(task_id, params: VideoParams):
+async def start(task_id, table, params: VideoParams):
     """
     {
         "video_subject": "",
@@ -65,6 +87,7 @@ def start(task_id, params: VideoParams):
         elif isinstance(video_terms, list):
             video_terms = [term.strip() for term in video_terms]
         else:
+            update_task_state(table=table, task_id=task_id, new_state="FAIL")
             raise ValueError("video_terms must be a string or a list of strings.")
 
         logger.debug(f"video terms: {utils.to_json(video_terms)}")
@@ -80,10 +103,11 @@ def start(task_id, params: VideoParams):
 
     logger.info("\n\n## generating audio")
     audio_file = path.join(utils.task_dir(task_id), f"audio.mp3")
-    sub_maker = voice.tts(text=video_script, voice_name=voice_name, voice_file=audio_file)
+    sub_maker = await voice.tts(text=video_script, voice_name=voice_name, voice_file=audio_file)
     if sub_maker is None:
         logger.error(
             "failed to generate audio, maybe the network is not available. if you are in China, please use a VPN.")
+        update_task_state(table=table, task_id=task_id, new_state="FAIL")
         return
 
     audio_duration = voice.get_audio_duration(sub_maker)
@@ -133,6 +157,7 @@ def start(task_id, params: VideoParams):
     if not downloaded_videos:
         logger.error(
             "failed to download videos, maybe the network is not available. if you are in China, please use a VPN.")
+        update_task_state(table=table, task_id=task_id, new_state="FAIL")
         return
 
     final_video_paths = []
@@ -168,6 +193,7 @@ def start(task_id, params: VideoParams):
 
     logger.success(f"task {task_id} finished, generated {len(final_video_paths)} videos.")
     upload_files_to_s3(final_video_paths, 'laoguis3-us-east-1', 'us-east-1', object_names)
+    update_task_state(table=table, task_id=task_id, new_state="SUCCESS")
 
     return {
         "videos": final_video_paths,

@@ -48,7 +48,7 @@
 
     # Subtitle Provider, "edge" or "whisper" or "polly"
     # If empty, the subtitle will not be generated
-    subtitle_provider = "polly"
+    subtitle_provider = "whisper"
 
     #
     # ImageMagick

@@ -5,6 +5,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from loguru import logger
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
 
 from app.config import config
 from app.models.exception import HttpException
@@ -46,6 +48,20 @@ def get_application() -> FastAPI:
 
 
 app = get_application()
+# List of allowed origins (i.e., the client URLs that will be allowed to access the API)
+origins = [
+    "http://localhost:3000",  # Allow your React app
+    # You can add more origins if needed
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allows the origins listed in the `origins` variable
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 public_dir = utils.public_dir()
 app.mount("/", StaticFiles(directory=public_dir, html=True), name="")
 

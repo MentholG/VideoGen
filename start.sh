@@ -1,2 +1,3 @@
+conda activate MoneyPrinterTurbo
 nohup python main.py &
-nohup sh webshell.sh &
+nohup sh webui.sh &

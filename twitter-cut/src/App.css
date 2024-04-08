@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App.css */
+.App {
+  @apply bg-purple-900 text-white;
+}
+
+.header {
+  @apply text-4xl font-bold m-4 self-start;
+}
+
+.flex-container {
+  @apply flex flex-1 items-center justify-center;
+}
+
+.card {
+  @apply bg-purple-700 p-6 rounded-xl shadow-xl;
+}
+
+.card-title {
+  @apply text-lg font-semibold mb-2 text-white;
+}
+
+.input-container {
+  @apply flex items-center w-full mb-4 bg-purple-500 rounded-full overflow-hidden;
+}
+
+.icon {
+  @apply h-12 w-12; /* Adjust the size as needed */
+}
+
+.input-box {
+  @apply flex-grow placeholder-black px-4 py-2 border border-gray-300 text-black rounded-full bg-purple-500;
+}
+
+.input-button {
+  @apply bg-purple-800 text-white font-bold py-2 px-4 rounded-r-full;
+}
+
+/* Assuming your base and utility styles are already applied */
+
+.VideoPage {
+  @apply min-h-screen bg-purple-900 text-white flex flex-col items-center justify-center;
+}
+
+.video-header {
+  @apply text-2xl font-bold m-4 self-start;
+}
+
+.video-container {
+  @apply flex flex-col items-center justify-center p-4;
+}
+
+.video-player {
+  @apply w-full max-w-lg rounded overflow-hidden my-4; /* Adjust max-width as needed for 'smaller' size */
+}
+
+.video-loading {
+  @apply bg-purple-700 p-4 rounded;
+}
+
+.captions-position {
+  @apply text-xs;
+}
+
+/* Rest of your styles */
