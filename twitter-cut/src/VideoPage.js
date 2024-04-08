@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom'; // Import useLocation
 
+const baseURL = process.env.REACT_APP_API_URL;
+
 const VideoPage = () => {
   const location = useLocation(); // Access location object
   const videoSubject = location.state?.videoSubject; // Access videoSubject from state
@@ -37,7 +39,7 @@ const VideoPage = () => {
         "n_threads": 2,
         "paragraph_number": 1
       };
-      let response = await fetch('http://127.0.0.1:8080/api/v1/videos', {
+      let response = await fetch(`${baseURL}/api/v1/videos`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -56,7 +58,7 @@ const VideoPage = () => {
       let taskDone = false;
       while (!taskDone) {
         try {
-          response = await fetch(`http://127.0.0.1:8080/api/v1/tasks/${taskId}`, {
+          response = await fetch(`${baseURL}/api/v1/tasks/${taskId}`, {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
