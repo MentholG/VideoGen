@@ -20,9 +20,9 @@ log_level = _cfg.get("log_level", "DEBUG")
 listen_host = _cfg.get("listen_host", "0.0.0.0")
 listen_port = _cfg.get("listen_port", 8080)
 project_name = _cfg.get("project_name", "MoneyPrinterTurbo")
-project_description = _cfg.get("project_description", "MoneyPrinterTurbo\n by 抖音-网旭哈瑞.AI")
+project_description = _cfg.get("project_description", "Twitter cut")
 project_version = _cfg.get("project_version", "1.0.0")
-reload_debug = False
+reload_debug = True
 
 imagemagick_path = app.get("imagemagick_path", "")
 if imagemagick_path and os.path.isfile(imagemagick_path):
