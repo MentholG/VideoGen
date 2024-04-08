@@ -51,6 +51,7 @@ app = get_application()
 # List of allowed origins (i.e., the client URLs that will be allowed to access the API)
 origins = [
     "http://localhost:3000",  # Allow your React app
+    "https://www.twittercut.com",  # Production React app
     # You can add more origins if needed
 ]
 
