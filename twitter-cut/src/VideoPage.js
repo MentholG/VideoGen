@@ -12,6 +12,7 @@ const VideoPage = () => {
 
 
   const generateVideo = async () => {
+    console.log(process.env.REACT_APP_API_URL)
     setIsLoading(true);
     try {
       // Initiate video generation and get task_id
