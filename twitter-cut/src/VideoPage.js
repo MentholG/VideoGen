@@ -39,7 +39,7 @@ const VideoPage = () => {
         "n_threads": 2,
         "paragraph_number": 1
       };
-      const createVideoUrl = `http://www.twittercut.com/api/v1/videos`
+      const createVideoUrl = `${baseURL}/api/v1/videos`
       console.log(`[generateVideo] createVideoUrl:${createVideoUrl}`)
       let response = await fetch(createVideoUrl, {
         method: 'POST',
