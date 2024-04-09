@@ -2,6 +2,8 @@ import math
 import os.path
 import re
 from os import path
+import re
+import requests
 
 from loguru import logger
 
@@ -12,6 +14,52 @@ from app.models.exception import HttpException
 from app.utils import utils
 import boto3
 from botocore.exceptions import NoCredentialsError
+
+def detect_and_call(video_subject):
+    # Regular expression to detect Twitter URL
+    twitter_link_regex = r"https?://(?:www\.)?(twitter\.com|x\.com)/(?:#!/)?(\w+)/status/(\d+)"
+    match = re.search(twitter_link_regex, video_subject)
+    
+    if match:
+        # It's a Twitter link, extract the ID
+        twitter_id = match.group(2)
+        # Prepare API call
+        url = "https://api.coze.com/open_api/v2/chat"
+        headers = {
+            'Authorization': 'Bearer pat_nHNJ5fqMDIQg8EcpcYfOT0oyaQzCIpk4k9v8uNWCltN34SckngHRKWEKrMw2xFuI',
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Host': 'api.coze.com',
+            'Connection': 'keep-alive'
+        }
+        data = {
+            "conversation_id": "123",
+            "bot_id": "7355685605986402309",
+            "user": "29032201862555",
+            "query": video_subject,
+            "stream": False
+        }
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            # Assuming the API returns JSON
+            response_data = response.json()
+            # Extracting raw tweet information based on your example response
+            raw_tweet_info = response_data["messages"][1]["content"]
+            return raw_tweet_info
+        else:
+            return "API call failed with status code: {}".format(response.status_code)
+    elif re.match(r"\d+", video_subject):
+        # It's a Twitter ID, handle accordingly
+        return "Detected a Twitter ID but this example does not make an API call for IDs."
+    else:
+        logger.info(f"Input is neither a Twitter link nor a Twitter ID.{video_subject}")
+        return video_subject
+
+# Example usage
+# video_subject_example = "https://twitter.com/chiefaioffice/status/1770873353810714718"
+# Uncomment the line below to test in your local environment where requests can be made.
+# print(detect_and_call(video_subject_example))
+
 
 
 def update_task_state(table, task_id, new_state):
@@ -63,7 +111,7 @@ async def start(task_id, table, params: VideoParams):
     }
     """
     logger.info(f"start task: {task_id}")
-    video_subject = params.video_subject
+    video_subject = detect_and_call(params.video_subject)
     voice_name, language = _parse_voice(params.voice_name)
     paragraph_number = params.paragraph_number
     n_threads = params.n_threads
