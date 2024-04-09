@@ -3,9 +3,7 @@ import { useLocation } from 'react-router-dom'; // Import useLocation
 
 const baseURL = process.env.REACT_APP_API_URL;
 
-console.log("here")
 const VideoPage = () => {
-  console.log(process.env.REACT_APP_API_URL)
   const location = useLocation(); // Access location object
   const videoSubject = location.state?.videoSubject; // Access videoSubject from state
 
@@ -14,7 +12,6 @@ const VideoPage = () => {
 
 
   const generateVideo = async () => {
-    console.log(process.env.REACT_APP_API_URL)
     setIsLoading(true);
     try {
       // Initiate video generation and get task_id
