@@ -85,7 +85,7 @@ def _generate_response(prompt: str) -> str:
             prompt = "<s>[INST]" + prompt + "</s>[/INST]"
             body = json.dumps({
                 "prompt": prompt,
-                "max_tokens": 400,
+                "max_tokens": 32000,
                 "temperature": 0.7,
                 "top_p": 0.7,
                 "top_k": 50
