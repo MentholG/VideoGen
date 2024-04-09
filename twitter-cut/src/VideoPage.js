@@ -39,7 +39,9 @@ const VideoPage = () => {
         "n_threads": 2,
         "paragraph_number": 1
       };
-      let response = await fetch(`${baseURL}/api/v1/videos`, {
+      createVideoUrl = `${baseURL}/api/v1/videos`
+      console.log(`[generateVideo] createVideoUrl:${createVideoUrl}`)
+      let response = await fetch(createVideoUrl, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
