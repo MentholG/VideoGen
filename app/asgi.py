@@ -52,6 +52,7 @@ app = get_application()
 origins = [
     "http://localhost:3000",  # Allow your React app
     "https://www.twittercut.com",  # Production React app
+    "http://www.twittercut.com",  # Production React app
     "http://44.203.68.144:3000", # Production Ec2
     # You can add more origins if needed
 ]
