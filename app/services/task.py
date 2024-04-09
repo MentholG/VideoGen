@@ -4,6 +4,8 @@ import re
 from os import path
 import re
 import requests
+import json
+
 
 from loguru import logger
 
@@ -44,7 +46,8 @@ def detect_and_call(video_subject):
             # Assuming the API returns JSON
             response_data = response.json()
             # Extracting raw tweet information based on your example response
-            raw_tweet_info = response_data["messages"][1]["content"]
+            raw_content = response_data["messages"][1]["content"]
+            raw_tweet_info = json.loads(raw_content)["data"]["text"]
             return raw_tweet_info
         else:
             return "API call failed with status code: {}".format(response.status_code)
