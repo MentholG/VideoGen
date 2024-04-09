@@ -19,9 +19,7 @@ const App = () => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [videoSubject, setVideoSubject] = useState('');
-  const [taskId, setTaskId] = useState(null);
-  
+  const [videoSubject, setVideoSubject] = useState('');  
   
   const handleNextClick = () => {
     navigate('/video', { state: { videoSubject } }); // Navigate to the VideoPage

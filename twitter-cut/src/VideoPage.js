@@ -91,7 +91,7 @@ const VideoPage = () => {
 
   useEffect(() => {
     generateVideo();
-  }, [videoSubject]);
+  }, [generateVideo, videoSubject]);
 
   return (
     <div className="VideoPage">
