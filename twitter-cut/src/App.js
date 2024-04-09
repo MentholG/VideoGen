@@ -42,7 +42,7 @@ const HomePage = () => {
               />
               <input
                 type="text"
-                placeholder="Placeholder"
+                placeholder="PHhh"
                 className="input-box"
                 value={videoSubject} // Set the input value to videoSubject
                 onChange={(e) => setVideoSubject(e.target.value)} // Update the state on input change
