@@ -72,7 +72,9 @@ def _generate_response(prompt: str) -> str:
             raise ValueError(f"{llm_provider}: base_url is not set, please set it in the config.toml file.")
 
         if llm_provider == "coze":
-            url = base_url
+            import random
+            # 设置种子
+            random.seed(1)
             headers = {
                 'Authorization': f'Bearer {api_key}',
                 'Content-Type': 'application/json',
@@ -81,13 +83,13 @@ def _generate_response(prompt: str) -> str:
                 'Connection': 'keep-alive'
             }
             data = {
-                "conversation_id": "123",
+                "conversation_id": str(random.randint(1, 99999)),
                 "bot_id": model_name,
-                "user": "29032201862555",
+                "user": str(random.randint(1, 99999)),
                 "query": prompt,
                 "stream": False
             }
-            response = requests.post(url, headers=headers, json=data)
+            response = requests.post(base_url, headers=headers, json=data)
             if response.status_code == 200:
                 # Assuming the API returns JSON
                 response_data = response.json()
