@@ -57,12 +57,29 @@
   @apply w-full max-w-lg rounded overflow-hidden my-4; /* Adjust max-width as needed for 'smaller' size */
 }
 
-.video-loading {
+.video-creating {
   @apply bg-purple-700 p-4 rounded;
 }
 
 .captions-position {
   @apply text-xs;
 }
+
+.download-button {
+  background-color: #6b46c1; /* Tailwind bg-purple-700 */
+  color: white; /* Tailwind text-white */
+  font-weight: bold; /* Tailwind font-bold */
+  padding: 0.5rem 1rem; /* Tailwind py-2 px-4 */
+  border-radius: 9999px; /* Tailwind rounded-full */
+  transition: background-color 0.3s; /* Smooth transition for hover effect */
+  text-decoration: none; /* Remove underline from link */
+  display: inline-block; /* Align correctly and allow padding */
+}
+
+.download-button:hover {
+  background-color: #553c9a; /* Tailwind bg-purple-800 for hover effect */
+  cursor: pointer;
+}
+
 
 /* Rest of your styles */

@@ -8,12 +8,10 @@ const VideoPage = () => {
   const taskID = location.state?.taskID; // Access videoSubject from state
 
   const [videoURL, setVideoURL] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(true);
 
 
   const generateVideo = async () => {
-    setIsLoading(true);
-    try {
       // Poll for task completion
       let taskDone = false;
       while (!taskDone) {
@@ -26,13 +24,15 @@ const VideoPage = () => {
           });
 
           const taskData = await response.json();
-          console.log(taskData)
+          console.log(`[generateVideo] ${JSON.stringify(taskData)}  ${taskData.data.state} === SUCCESS = ${taskData.data.state === 'SUCCESS'} `)
           if (taskData && taskData.status === 200 && taskData.data && taskData.data.state === 'SUCCESS') {
             taskDone = true;
             // Set the video URL here
             const videoUrl = `https://laoguis3-us-east-1.s3.amazonaws.com/videos/${taskID}.mp4`;
             setVideoURL(videoUrl); // Example URL
-            setIsLoading(false);
+            console.log(`[generateVideo] isCreating ${isCreating} `)
+            setIsCreating(false);
+            console.log(`[generateVideo] isCreating ${isCreating} `)
           } else {
             await new Promise(resolve => setTimeout(resolve, 3000)); // Wait before polling again
           }
@@ -41,9 +41,6 @@ const VideoPage = () => {
           console.error("Error during video generation:", error);
         }
       }
-    } catch (error) {
-      console.error("Error during video generation:", error);
-    }
   };
 
   useEffect(() => {
@@ -55,13 +52,19 @@ const VideoPage = () => {
       <header className="header">TwitterCuts</header>
       <div className="flex-container">
         <div className="video-container">
-          {isLoading ? (
-            <div className="video-loading">Generating video...</div>
+          {isCreating ? (
+            <div className="video-creating">Generating video...</div>
           ) : (
-            <video className="video-player" controls>
-              <source src={videoURL} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            <>
+              <video className="video-player" controls>
+                <source src={videoURL} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              {/* Download Button */}
+              <a href={videoURL} download={`Video-${taskID}.mp4`} className="download-button">
+                Download Video
+              </a>
+            </>
           )}
           <div className="captions-position">Captions position</div>
         </div>
