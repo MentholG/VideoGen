@@ -41,11 +41,13 @@ def detect_and_call(video_subject):
             "query": video_subject,
             "stream": False
         }
+        logger.info(data)
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
             # Assuming the API returns JSON
             response_data = response.json()
             # Extracting raw tweet information based on your example response
+            logger.info(response_data)
             raw_content = response_data["messages"][1]["content"]
             raw_tweet_info = json.loads(raw_content)["data"]["text"]
             return raw_tweet_info

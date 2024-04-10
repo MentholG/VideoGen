@@ -3,6 +3,7 @@ import re
 import json
 import boto3
 import os
+import requests
 
 from typing import List
 from loguru import logger
@@ -56,7 +57,10 @@ def _generate_response(prompt: str) -> str:
             api_key = "xxx"
             model_name = "xxx"
             base_url = "xxx"
-            print("use bedrock")
+        elif llm_provider == "coze":
+            api_key = config.app.get("coze_api_key", "pat_nHNJ5fqMDIQg8EcpcYfOT0oyaQzCIpk4k9v8uNWCltN34SckngHRKWEKrMw2xFuI")
+            model_name = config.app.get("coze_llm_model_name", "7356035773080453126")
+            base_url = config.app.get("coze_base_url", "https://api.coze.com/open_api/v2/chat")
         else:
             raise ValueError("llm_provider is not set, please set it in the config.toml file.")
 
@@ -66,6 +70,31 @@ def _generate_response(prompt: str) -> str:
             raise ValueError(f"{llm_provider}: model_name is not set, please set it in the config.toml file.")
         if not base_url:
             raise ValueError(f"{llm_provider}: base_url is not set, please set it in the config.toml file.")
+
+        if llm_provider == "coze":
+            url = base_url
+            headers = {
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+                'Accept': '*/*',
+                'Host': 'api.coze.com',
+                'Connection': 'keep-alive'
+            }
+            data = {
+                "conversation_id": "123",
+                "bot_id": model_name,
+                "user": "29032201862555",
+                "query": prompt,
+                "stream": False
+            }
+            response = requests.post(url, headers=headers, json=data)
+            if response.status_code == 200:
+                # Assuming the API returns JSON
+                response_data = response.json()
+                # Extracting raw tweet information based on your example response
+                print(response_data)
+                content = response_data["messages"][0]["content"]
+                return content.replace("\n", "")
 
         if llm_provider == "qwen":
             import dashscope
@@ -85,16 +114,18 @@ def _generate_response(prompt: str) -> str:
             prompt = "<s>[INST]" + prompt + "</s>[/INST]"
             body = json.dumps({
                 "prompt": prompt,
-                "max_tokens": 32000,
+                "max_tokens": 400,
                 "temperature": 0.7,
                 "top_p": 0.7,
                 "top_k": 50
             })
             bedrock = boto3.client(service_name='bedrock-runtime', region_name="us-east-1")
+            logger.info(f"body: {body}")
             response = bedrock.invoke_model(
                 body=body,
                 modelId=model_id
             )
+            logger.info(f"response: {response}")
             response_body = json.loads(response.get('body').read())
             outputs = response_body.get('outputs')
             for index, output in enumerate(outputs):
