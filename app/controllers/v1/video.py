@@ -35,7 +35,8 @@ async def create_video(request: Request, body: TaskVideoRequest, background_task
             "task_id": internal_task_id,
             "create_time": create_time,
             # Add other task details you need to store
-            "state": "RUNNING"
+            "state": "RUNNING",
+            "percentage": 0
         }
         
         # Insert task into DynamoDB
@@ -46,12 +47,8 @@ async def create_video(request: Request, body: TaskVideoRequest, background_task
         background_tasks.add_task(tm.start, task_id=task_id, table=table, params=body)
         # result = tm.start(task_id=task_id, table=table, params=body)
         # task["result"] = result
-        task = {
-            "task_id": task_id,
-            "create_time": create_time,
-            # Add other task details you need to store
-            "state": "RUNNING"
-        }
+        task = internal_task
+        task["task_id"] = task_id
 
         logger.success(f"video creating: {utils.to_json(task)}")
         

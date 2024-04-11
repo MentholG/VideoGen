@@ -1,59 +1,67 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom'; // Import useLocation
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import loadingGif from './resources/loading.gif'; // Adjust the path to where your GIF is located
+
 
 const baseURL = process.env.REACT_APP_API_URL;
 
 const VideoPage = () => {
-  const location = useLocation(); // Access location object
-  const taskID = location.state?.taskID; // Access videoSubject from state
+  const location = useLocation();
+  const taskID = location.state?.taskID;
 
   const [videoURL, setVideoURL] = useState('');
   const [isCreating, setIsCreating] = useState(true);
-
+  const [progress, setProgress] = useState(0);
+  const progressRef = useRef(progress); // 使用useRef来跟踪progress的当前值
 
   const generateVideo = async () => {
-      // Poll for task completion
-      let taskDone = false;
-      while (!taskDone) {
-        try {
-          let response = await fetch(`${baseURL}/api/v1/tasks/${taskID}`, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-            }
-          });
 
-          const taskData = await response.json();
-          console.log(`[generateVideo] ${JSON.stringify(taskData)}  ${taskData.data.state} === SUCCESS = ${taskData.data.state === 'SUCCESS'} `)
-          if (taskData && taskData.status === 200 && taskData.data && taskData.data.state === 'SUCCESS') {
+    let taskDone = false;
+    while (!taskDone) {
+      try {
+        let response = await fetch(`${baseURL}/api/v1/tasks/${taskID}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+
+        const taskData = await response.json();
+        if (taskData && taskData.status === 200 && taskData.data) {
+          if (taskData.data.state === 'SUCCESS') {
             taskDone = true;
-            // Set the video URL here
-            const videoUrl = `https://laoguis3-us-east-1.s3.amazonaws.com/videos/${taskID}.mp4`;
-            setVideoURL(videoUrl); // Example URL
-            console.log(`[generateVideo] isCreating ${isCreating} `)
             setIsCreating(false);
-            console.log(`[generateVideo] isCreating ${isCreating} `)
-          } else {
-            await new Promise(resolve => setTimeout(resolve, 3000)); // Wait before polling again
+            setProgress(100);
+          } else if (taskData.data.percentage > progressRef.current) { // 使用progressRef.current来获取当前的progress值
+            setProgress(taskData.data.percentage);
+            progressRef.current = taskData.data.percentage; // 更新progressRef的当前值
           }
         }
-        catch (error) {
-          console.error("Error during video generation:", error);
-        }
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
+      catch (error) {
+        console.error("Error during video generation:", error);
+      }
+    }
   };
 
   useEffect(() => {
     generateVideo();
-  }, [generateVideo, taskID]);
+  }, [generateVideo]);
 
   return (
     <div className="VideoPage">
-      <header className="header">TwitterCuts</header>
+      <header className="header">TwitterCut</header>
       <div className="flex-container">
         <div className="video-container">
-          {isCreating ? (
-            <div className="video-creating">Generating video...</div>
+        {isCreating ? (
+            <>
+              <img src={loadingGif} alt="Loading..." className="loading-gif" />
+              <div className="progress-bar-background">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+              <div className="progress-text">Generating video... {progress}%</div>
+            </>
           ) : (
             <>
               <video className="video-player" controls>
@@ -66,7 +74,7 @@ const VideoPage = () => {
               </a>
             </>
           )}
-          <div className="captions-position">Captions position</div>
+          {/* <div className="captions-position">Captions position</div> */}
         </div>
       </div>
     </div>

@@ -22,7 +22,7 @@ listen_port = _cfg.get("listen_port", 8080)
 project_name = _cfg.get("project_name", "MoneyPrinterTurbo")
 project_description = _cfg.get("project_description", "Twitter cut")
 project_version = _cfg.get("project_version", "1.0.0")
-reload_debug = True
+reload_debug = False
 
 imagemagick_path = app.get("imagemagick_path", "")
 if imagemagick_path and os.path.isfile(imagemagick_path):

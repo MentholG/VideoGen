@@ -17,7 +17,32 @@ from app.utils import utils
 import boto3
 from botocore.exceptions import NoCredentialsError
 
-def detect_and_call(video_subject):
+def update_task_state(table, task_id, new_state, percentage, message):
+    parts = task_id.split('_')
+    if len(parts) != 2:
+        raise HttpException(status_code=404, message=f"Task id is wrong format {task_id}")
+    internal_task_id = parts[0]
+    create_time = int(parts[1])
+    response = table.update_item(
+        Key={
+            'task_id': internal_task_id,  # Assuming 'TaskID' is the primary key
+            'create_time': create_time,
+        },
+        UpdateExpression='SET #state = :state_val, #percentage = :percentage_val, #message = :message_val',  # Update 'state' and 'percentage'
+        ExpressionAttributeValues={
+            ':state_val': new_state,
+            ':percentage_val': percentage,  # New percentage value
+            ':message_val': message
+        },
+        ExpressionAttributeNames={
+            '#state': 'state',  # Use if 'state' is a reserved word or for safer attribute naming
+            '#percentage': 'percentage',  # Assuming 'percentage' is the attribute to be added/updated
+            '#message': 'message'  # Assuming 'message' is the attribute to be added/updated
+        },
+        ReturnValues="UPDATED_NEW"
+    )
+
+def detect_and_call(video_subject, table, task_id):
     # Regular expression to detect Twitter URL
     twitter_link_regex = r"https?://(?:www\.)?(twitter\.com|x\.com)/(?:#!/)?(\w+)/status/(\d+)"
     match = re.search(twitter_link_regex, video_subject)
@@ -48,10 +73,24 @@ def detect_and_call(video_subject):
             response_data = response.json()
             # Extracting raw tweet information based on your example response
             logger.info(response_data)
-            raw_content = response_data["messages"][1]["content"]
-            raw_tweet_info = json.loads(raw_content)["data"]["text"]
+            raw_tweet_info = ""
+            try:
+                raw_content = response_data["messages"][1]["content"]
+                raw_tweet_info = json.loads(raw_content)["data"]["text"]
+                message = "Twitter API returned"
+            except KeyError as e:
+                logger.error(f"Key error accessing response data: {e}")
+                message = "Failed to extract tweet info due to missing data."
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error: {e}")
+                message = "Failed to decode tweet info."
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+                message = "Unexpected error occurred while processing tweet info."
+            update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=10, message=message)
             return raw_tweet_info
         else:
+            update_task_state(table=table, task_id=task_id, new_state="FAIL", percentage=10, message=f"Twitter API failed with {response.status_code}")
             return "API call failed with status code: {}".format(response.status_code)
     elif re.match(r"\d+", video_subject):
         # It's a Twitter ID, handle accordingly
@@ -64,29 +103,6 @@ def detect_and_call(video_subject):
 # video_subject_example = "https://twitter.com/chiefaioffice/status/1770873353810714718"
 # Uncomment the line below to test in your local environment where requests can be made.
 # print(detect_and_call(video_subject_example))
-
-
-
-def update_task_state(table, task_id, new_state):
-    parts = task_id.split('_')
-    if len(parts) != 2:
-        raise HttpException(status_code=404, message=f"Task id is wrong format {task_id}")
-    internal_task_id = parts[0]
-    create_time = int(parts[1])
-    response = table.update_item(
-        Key={
-            'task_id': internal_task_id,  # Assuming 'TaskID' is the primary key
-            'create_time': create_time
-        },
-        UpdateExpression='SET #state = :val',  # Update the 'state' attribute
-        ExpressionAttributeValues={
-            ':val': new_state
-        },
-        ExpressionAttributeNames={
-            '#state': 'state'  # Use if 'state' is a reserved word or for safer attribute naming
-        },
-        ReturnValues="UPDATED_NEW"
-    )
 
 def _parse_voice(name: str):
     # "female-zh-CN-XiaoxiaoNeural",
@@ -116,7 +132,7 @@ async def start(task_id, table, params: VideoParams):
     }
     """
     logger.info(f"start task: {task_id}")
-    video_subject = detect_and_call(params.video_subject)
+    video_subject = detect_and_call(params.video_subject, table, task_id)
     voice_name, language = _parse_voice(params.voice_name)
     paragraph_number = params.paragraph_number
     n_threads = params.n_threads
@@ -129,7 +145,8 @@ async def start(task_id, table, params: VideoParams):
                                            paragraph_number=paragraph_number)
     else:
         logger.debug(f"video script: \n{video_script}")
-
+    update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=20, message="video_script generated")
+        
     logger.info("\n\n## generating video terms")
     video_terms = params.video_terms
     if not video_terms:
@@ -140,10 +157,11 @@ async def start(task_id, table, params: VideoParams):
         elif isinstance(video_terms, list):
             video_terms = [term.strip() for term in video_terms]
         else:
-            update_task_state(table=table, task_id=task_id, new_state="FAIL")
+            update_task_state(table=table, task_id=task_id, new_state="FAIL", message="video_terms must be a string or a list of strings.")
             raise ValueError("video_terms must be a string or a list of strings.")
 
         logger.debug(f"video terms: {utils.to_json(video_terms)}")
+    update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=30, message="video terms generated")
 
     script_file = path.join(utils.task_dir(task_id), f"script.json")
     script_data = {
@@ -162,6 +180,7 @@ async def start(task_id, table, params: VideoParams):
             "failed to generate audio, maybe the network is not available. if you are in China, please use a VPN.")
         update_task_state(table=table, task_id=task_id, new_state="FAIL")
         return
+    update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=40, message="audio generated")
 
     audio_duration = voice.get_audio_duration(sub_maker)
     audio_duration = math.ceil(audio_duration)
@@ -192,7 +211,7 @@ async def start(task_id, table, params: VideoParams):
             subtitle.create(audio_file=audio_file, subtitle_file=subtitle_path)
             logger.info("\n\n## correcting subtitle")
             subtitle.correct(subtitle_file=subtitle_path, video_script=video_script)
-
+        update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=50, message="subtitle generated")
 
         subtitle_lines = subtitle.file_to_subtitles(subtitle_path)
         if not subtitle_lines:
@@ -210,8 +229,9 @@ async def start(task_id, table, params: VideoParams):
     if not downloaded_videos:
         logger.error(
             "failed to download videos, maybe the network is not available. if you are in China, please use a VPN.")
-        update_task_state(table=table, task_id=task_id, new_state="FAIL")
+        update_task_state(table=table, task_id=task_id, new_state="FAIL", percentage=60, message="video download fail")
         return
+    update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=60, message="video download success")
 
     final_video_paths = []
     object_names = []
@@ -230,6 +250,7 @@ async def start(task_id, table, params: VideoParams):
                              video_concat_mode=video_concat_mode,
                              max_clip_duration=max_clip_duration,
                              threads=n_threads)
+        update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=70, message="video combining success")
 
         final_video_path = path.join(utils.task_dir(task_id), f"final-{index}.mp4")
 
@@ -243,10 +264,11 @@ async def start(task_id, table, params: VideoParams):
                              )
         final_video_paths.append(final_video_path)
         object_names.append(f"{task_id}")
+        update_task_state(table=table, task_id=task_id, new_state="RUNNING", percentage=90, message="video generation success")
 
     logger.success(f"task {task_id} finished, generated {len(final_video_paths)} videos.")
     upload_files_to_s3(final_video_paths, 'laoguis3-us-east-1', 'us-east-1', object_names)
-    update_task_state(table=table, task_id=task_id, new_state="SUCCESS")
+    update_task_state(table=table, task_id=task_id, new_state="SUCCESS", percentage=100, message="video upload success")
 
     return {
         "videos": final_video_paths,

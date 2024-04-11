@@ -16,27 +16,23 @@
 }
 
 .card {
-  @apply bg-purple-700 p-6 rounded-xl shadow-xl;
-}
-
-.card-title {
-  @apply text-lg font-semibold mb-2 text-white;
+  @apply bg-purple-700 p-6 rounded-xl shadow-xl flex justify-center;
 }
 
 .input-container {
-  @apply flex items-center w-full mb-4 bg-purple-500 rounded-full overflow-hidden;
+  @apply flex items-center bg-purple-500 rounded-full shadow-lg;
 }
 
 .icon {
-  @apply h-12 w-12; /* Adjust the size as needed */
+  @apply flex-none h-12 w-12; /* Adjust the size as needed, ensure padding to align with input height */
 }
 
 .input-box {
-  @apply flex-grow placeholder-black px-4 py-2 border border-gray-300 text-black rounded-full bg-purple-500;
+  @apply flex-grow text-lg placeholder-white placeholder-opacity-50 px-4 py-3 border-none rounded-l-full bg-purple-500 text-white;
 }
 
 .input-button {
-  @apply bg-purple-800 text-white font-bold py-2 px-4 rounded-r-full;
+  @apply flex-none bg-purple-800 text-white font-bold py-3 px-6 rounded-r-full hover:bg-purple-600 focus:outline-none transition duration-300 ease-in-out;
 }
 
 /* Assuming your base and utility styles are already applied */
@@ -63,6 +59,19 @@
 
 .captions-position {
   @apply text-xs;
+}
+
+/* Progress Bar Styles */
+.progress-bar-background {
+  @apply w-full bg-purple-500 rounded-full overflow-hidden;
+}
+
+.progress-bar-fill {
+  @apply bg-purple-700 h-2 rounded-full transition-all duration-300 ease-in-out;
+}
+
+.progress-text {
+  @apply text-white text-center mt-2;
 }
 
 .download-button {
