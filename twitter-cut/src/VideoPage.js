@@ -32,6 +32,7 @@ const VideoPage = () => {
             taskDone = true;
             setIsCreating(false);
             setProgress(100);
+            setVideoURL(`https://laoguis3-us-east-1.s3.amazonaws.com/videos/${taskID}.mp4`);
           } else if (taskData.data.percentage > progressRef.current) { // 使用progressRef.current来获取当前的progress值
             setProgress(taskData.data.percentage);
             progressRef.current = taskData.data.percentage; // 更新progressRef的当前值
